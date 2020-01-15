@@ -1,50 +1,48 @@
 import { Injectable, EventEmitter } from '@angular/core';
 import { IEvent, ISession } from './event.model';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, throwError } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EventService {
 
-  constructor() { }
+  constructor(private http:HttpClient ) { }
   getEvents():Observable<IEvent[]>{
-    let subject = new Subject<IEvent[]>()
-    setTimeout(()=>{subject.next(EVENTS); subject.complete();},100)
-    return subject
+    return this.http.get<IEvent[]>("/api/events")
+    .pipe(catchError(this.handleError));
   }
-  getEvent(id:number):IEvent{
-    return EVENTS.find((curEvent)=>curEvent.id === id);
+  getEvent(id:number):Observable<IEvent>{
+    return this.http.get<IEvent>(`/api/events/${id}`)
+    .pipe(catchError(this.handleError));
+    // return EVENTS.find((curEvent)=>curEvent.id === id);
   }
-  saveEvent(event:IEvent){
-    event.id = 99;
-    event.sessions = []
-    EVENTS.push(event);
+  saveEvent(event:IEvent):Observable<IEvent>{
+    let options ={headers:new HttpHeaders({'Content-Type':'application/json'})}
+    return this.http.post<IEvent>('/api/events',event,options)
+    .pipe(catchError(this.handleError))
   }
-  updateEvent(event){
-    let index = EVENTS.findIndex((e)=> e.id === event.id)
-    EVENTS[index]= event
+  searchSessions(searchTerm:string):Observable<ISession[]>{
+    return this.http.get<ISession[]>(`/api/sessions/search?search=${searchTerm}`)
+    .pipe(catchError(this.handleError));
   }
-  searchSessions(searchTerm:string){
-    let term = searchTerm.toLocaleLowerCase();
-    var results=[]
-    EVENTS.forEach((event)=>{
-      var matchingSessions = event.sessions.filter((session)=>{
-        return session.name.toLocaleLowerCase().includes(term)
-      })
-      matchingSessions = matchingSessions.map((session:any)=>{
-        session.eventId = event.id;
-        return session
-      })
-      results = results.concat(matchingSessions)
-    })
-    
-    var emitter = new EventEmitter(true);
-    setTimeout(()=>{
-      emitter.emit(results)
-    },100)
-    return emitter
-  }
+  private handleError(error: HttpErrorResponse) {
+    if (error.error instanceof ErrorEvent) {
+      // A client-side or network error occurred. Handle it accordingly.
+      console.error('An error occurred:', error.error.message);
+    } else {
+      // The backend returned an unsuccessful response code.
+      // The response body may contain clues as to what went wrong,
+      console.error(
+        `Backend returned code ${error.status}, ` +
+        `body was: ${error.error}`);
+    }
+    // return an observable with a user-facing error message
+    return throwError(
+      'Something bad happened; please try again later.');
+  };
 }
 
 const EVENTS:IEvent[] = [

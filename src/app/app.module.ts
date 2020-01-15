@@ -6,7 +6,6 @@ import{
   EventService,
   EventDetailsComponent,
   CreateEventComponent,
-  EventRouteActivatorService
 } from "./events/index";
 import { AppComponent } from './app.component';
 import { NavbarComponent } from './navbar/navbar.component'
@@ -26,6 +25,8 @@ import { SimpleModalComponent } from './common/simple-modal/simple-modal.compone
 import { ModalTriggerDirective } from './common/modal-trigger.directive';
 import { UpvoteComponent } from './events/event-details/session-list/upvote/upvote.component';
 import { LocationValidatorDirective } from './shared/location-validator.directive';
+import {HttpClientModule} from '@angular/common/http';
+import { EventResolverService } from './events/event-details/event-resolver.service';
 let toastr:Toastr  = window['toastr']
 let jQuery:Toastr  = window['$']
 @NgModule({
@@ -44,13 +45,15 @@ let jQuery:Toastr  = window['$']
     SimpleModalComponent,
     ModalTriggerDirective,
     UpvoteComponent,
-    LocationValidatorDirective
+    LocationValidatorDirective,
+    
   ],
   imports: [
     BrowserModule,
     RouterModule.forRoot(appRoutes),
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    HttpClientModule
   ],
   providers: [
     EventService,
@@ -62,8 +65,8 @@ let jQuery:Toastr  = window['$']
       provide: JQ_TOKEN,
       useValue:jQuery
     },
-    EventRouteActivatorService,
     EventListResolverService,
+    EventResolverService,
     AuthService,
     {
       provide:"checkDeactivateCreateEvent",

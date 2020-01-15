@@ -14,8 +14,9 @@ export class CreateEventComponent implements OnInit {
   ngOnInit() {
   }
   saveEvent(formValues){
-    this.eventService.saveEvent(formValues);
-    this.isDirty = false;
-    this.route.navigate(['events'])
+    this.eventService.saveEvent(formValues).subscribe((event)=>{
+      this.isDirty = false;
+      this.route.navigate(['events'])
+    });
   }
 }
